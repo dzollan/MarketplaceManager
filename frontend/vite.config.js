@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   base: '/MarketplaceManager/',
   define: {
-    __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
   },
 })
