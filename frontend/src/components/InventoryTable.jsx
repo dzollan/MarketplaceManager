@@ -62,6 +62,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
       accessorFn: (row) => parseFloat(row['TCG Marketplace Price']) || 0,
       cell: (info) => {
         const rowIdx = info.row.index
+        const row = info.row.original
         const isEditing = editingCell?.rowIndex === rowIdx
         const currentPrice = parseFloat(row['TCG Marketplace Price']) || 0
 
