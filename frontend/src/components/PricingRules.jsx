@@ -1,23 +1,19 @@
 import { useState } from 'react'
 
-export default function PricingRules({ rules, setRules, onApply, canApply, disabled }) {
+export default function PricingRules({ onApply, canApply, disabled }) {
   const [quantity, setQuantity] = useState(3)
   const [operator, setOperator] = useState('gte')
   const [percent, setPercent] = useState(10)
 
-  const addRule = () => {
-    const newRule = { condition: 'quantity', operator, value: Number(quantity), percent: Number(percent) }
-    setRules([...rules, newRule])
-  }
-
-  const removeRule = (index) => {
-    setRules(rules.filter((_, i) => i !== index))
+  const apply = () => {
+    const rule = { condition: 'quantity', operator, value: Number(quantity), percent: Number(percent) }
+    onApply([rule])
   }
 
   return (
     <div className="card">
       <h2>⚙️ Bulk Pricing Rules</h2>
-      <p className="card-desc">Set rules to adjust prices based on inventory quantity.</p>
+      <p className="card-desc">Adjust prices based on inventory quantity.</p>
 
       <div className="rule-builder">
         <div className="form-row">
@@ -53,27 +49,15 @@ export default function PricingRules({ rules, setRules, onApply, canApply, disab
             />
           </label>
           <label>%</label>
-          <button className="btn btn-secondary" onClick={addRule}>+ Add Rule</button>
         </div>
       </div>
 
-      {rules.length > 0 && (
-        <div className="rules-list">
-          {rules.map((rule, i) => (
-            <div key={i} className="rule-item">
-              <span>Qty {rule.operator === 'gte' ? '≥' : rule.operator === 'lte' ? '≤' : '='} {rule.value} → Increase by {rule.percent}%</span>
-              <button className="btn-remove" onClick={() => removeRule(i)}>✕</button>
-            </div>
-          ))}
-        </div>
-      )}
-
       <button
         className="btn btn-apply"
-        onClick={onApply}
-        disabled={!canApply || rules.length === 0 || disabled}
+        onClick={apply}
+        disabled={!canApply || disabled}
       >
-        Apply Rules
+        Apply Rule
       </button>
     </div>
   )

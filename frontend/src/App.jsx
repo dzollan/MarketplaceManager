@@ -7,7 +7,6 @@ import './App.css'
 
 function App() {
   const [inventory, setInventory] = useState([])
-  const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [viewMode, setViewMode] = useState('table') // kept for backwards compat, only table is used
@@ -47,18 +46,18 @@ function App() {
     }
   }, [inventory, baselinePercent, baselineShip, ignoreZeroQty])
 
-  const applyRules = useCallback(() => {
+  const applyRules = useCallback((ruleList) => {
     setLoading(true)
     setError('')
     try {
-      const updated = doRules(inventory, rules, ignoreZeroQty)
+      const updated = doRules(inventory, ruleList, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [inventory, rules, ignoreZeroQty])
+  }, [inventory, ignoreZeroQty])
 
   const handleExport = () => {
     exportCSV(inventory)
@@ -142,8 +141,6 @@ function App() {
             </button>
           </div>
           <PricingRules
-            rules={rules}
-            setRules={setRules}
             onApply={applyRules}
             canApply={inventory.length > 0}
             disabled={loading}
