@@ -3,7 +3,7 @@ import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
 import InventoryGrid from './components/InventoryGrid'
 import PricingRules from './components/PricingRules'
-import { applyBaseline, applyRules, exportCSV } from './utils/csvUtils'
+import { applyBaseline as doBaseline, applyRules as doRules, exportCSV } from './utils/csvUtils'
 import './App.css'
 
 function App() {
@@ -30,7 +30,7 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const updated = applyBaseline(inventory, baselinePercent, baselineShip, ignoreZeroQty)
+      const updated = doBaseline(inventory, baselinePercent, baselineShip, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
@@ -43,7 +43,7 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const updated = applyRules(inventory, rules, ignoreZeroQty)
+      const updated = doRules(inventory, rules, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
