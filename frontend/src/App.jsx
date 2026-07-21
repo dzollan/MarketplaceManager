@@ -60,7 +60,10 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>🃏 TCG Marketplace Pricing Manager</h1>
-        <span className="app-credits">by Raboot</span>
+        <span className="app-credits">
+          by Raboot
+          <span className="app-version">• Updated {new Date(__BUILD_TIME__).toLocaleDateString()}</span>
+        </span>
       </header>
 
       <div className="layout">
