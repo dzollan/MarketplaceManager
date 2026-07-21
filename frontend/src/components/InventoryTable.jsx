@@ -65,7 +65,7 @@ export default function InventoryTable({ inventory }) {
       id: 'OldPrice',
       header: 'Old Price',
       accessorFn: (row) => row._originalPrice || 0,
-      cell: (info) => <span className="price-cell price-old">$${info.getValue().toFixed(2)}</span>,
+      cell: (info) => <span className="price-cell price-old">${info.getValue().toFixed(2)}</span>,
     },
     {
       id: 'PriceDiff',

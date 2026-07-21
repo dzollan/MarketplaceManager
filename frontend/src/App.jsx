@@ -62,7 +62,7 @@ function App() {
         <h1>🃏 TCG Marketplace Pricing Manager</h1>
         <span className="app-credits">
           by Raboot
-          <span className="app-version">• Updated {new Date(__BUILD_TIME__).toLocaleDateString()}</span>
+          <span className="app-version">• Updated {new Date(__BUILD_TIME__).toLocaleString()}</span>
         </span>
       </header>
 
