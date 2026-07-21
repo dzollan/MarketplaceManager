@@ -61,6 +61,28 @@ export default function InventoryTable({ inventory }) {
       accessorFn: (row) => parseFloat(row['TCG Marketplace Price']) || 0,
       cell: (info) => <span className="price-cell">${info.getValue().toFixed(2)}</span>,
     },
+    {
+      id: 'OldPrice',
+      header: 'Old Price',
+      accessorFn: (row) => row._originalPrice || 0,
+      cell: (info) => <span className="price-cell price-old">$${info.getValue().toFixed(2)}</span>,
+    },
+    {
+      id: 'PriceDiff',
+      header: '% Diff',
+      accessorFn: (row) => {
+        const newPrice = parseFloat(row['TCG Marketplace Price']) || 0
+        const oldPrice = row._originalPrice || 0
+        if (oldPrice === 0) return 0
+        return ((newPrice - oldPrice) / oldPrice) * 100
+      },
+      cell: (info) => {
+        const diff = info.getValue()
+        const sign = diff > 0 ? '+' : ''
+        const className = diff > 0 ? 'price-up' : diff < 0 ? 'price-down' : 'price-same'
+        return <span className={className}>{sign}{diff.toFixed(1)}%</span>
+      },
+    },
   ]
 
   const table = useReactTable({

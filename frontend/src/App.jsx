@@ -15,36 +15,42 @@ function App() {
   const [baselinePercent, setBaselinePercent] = useState(105)
   const [baselineShip, setBaselineShip] = useState(0.70)
   const [baselineEditing, setBaselineEditing] = useState(false)
+  const [ignoreZeroQty, setIgnoreZeroQty] = useState(false)
 
   const handleUpload = useCallback((data) => {
-    setInventory(data)
+    // Store the original marketplace price
+    const withOriginalPrice = data.map((item) => ({
+      ...item,
+      _originalPrice: parseFloat(item['TCG Marketplace Price']) || 0,
+    }))
+    setInventory(withOriginalPrice)
   }, [])
 
   const applyBaseline = useCallback(() => {
     setLoading(true)
     setError('')
     try {
-      const updated = applyBaseline(inventory, baselinePercent, baselineShip)
+      const updated = applyBaseline(inventory, baselinePercent, baselineShip, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [inventory, baselinePercent, baselineShip])
+  }, [inventory, baselinePercent, baselineShip, ignoreZeroQty])
 
   const applyRules = useCallback(() => {
     setLoading(true)
     setError('')
     try {
-      const updated = applyRules(inventory, rules)
+      const updated = applyRules(inventory, rules, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [inventory, rules])
+  }, [inventory, rules, ignoreZeroQty])
 
   const handleExport = () => {
     exportCSV(inventory)
@@ -99,6 +105,15 @@ function App() {
                 </div>
               </div>
             )}
+            <div className="card-row checkbox-row">
+              <input
+                type="checkbox"
+                id="ignoreZeroQty"
+                checked={ignoreZeroQty}
+                onChange={(e) => setIgnoreZeroQty(e.target.checked)}
+              />
+              <label htmlFor="ignoreZeroQty">Skip items with 0 qty</label>
+            </div>
             <button
               className="btn btn-baseline"
               onClick={applyBaseline}

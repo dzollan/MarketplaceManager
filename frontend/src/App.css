@@ -76,6 +76,43 @@
   display: none;
 }
 
+/* Checkbox row */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.checkbox-row label {
+  font-size: 0.85rem;
+  color: #444;
+  cursor: pointer;
+}
+
+/* Price columns */
+.price-old {
+  color: #888;
+}
+
+.price-up {
+  color: #2e7d32;
+}
+
+.price-down {
+  color: #c62828;
+}
+
+.price-same {
+  color: #888;
+}
+
 /* Buttons */
 .btn {
   padding: 8px 16px;
