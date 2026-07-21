@@ -11,9 +11,21 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.4rem;
+}
+
+.app-credits {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-left: 16px;
 }
 
 .layout {

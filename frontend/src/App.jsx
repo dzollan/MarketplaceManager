@@ -54,6 +54,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>🃏 TCG Marketplace Pricing Manager</h1>
+        <span className="app-credits">by Raboot</span>
       </header>
 
       <div className="layout">
