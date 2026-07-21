@@ -22,12 +22,11 @@ Then open http://localhost:5173 in your browser.
 
 ## Deploying to GitHub Pages
 
-```bash
-cd frontend
-npm run deploy
-```
+Deployment is handled automatically by [GitHub Actions](.github/workflows/deploy.yml).
 
-Then go to your GitHub repo → **Settings → Pages → Source: Deploy from a branch → `gh-pages` branch**.
+1. Go to your repo → **Settings → Pages**
+2. Under **Build and deployment**, select **GitHub Actions**
+3. Push to `main` — the workflow will build and deploy
 
 ## Usage
 
@@ -44,3 +43,4 @@ Then go to your GitHub repo → **Settings → Pages → Source: Deploy from a b
 - Apply pricing rules to all inventory
 - Export updated pricing as CSV
 - No backend required — everything runs in the browser
+- Automatic deployment to GitHub Pages via Actions
