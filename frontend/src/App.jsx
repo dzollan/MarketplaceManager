@@ -3,7 +3,7 @@ import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
 import InventoryGrid from './components/InventoryGrid'
 import PricingRules from './components/PricingRules'
-import { API_URL } from './config'
+import { applyBaseline, applyRules, exportCSV } from './utils/csvUtils'
 import './App.css'
 
 function App() {
@@ -16,60 +16,38 @@ function App() {
   const [baselineShip, setBaselineShip] = useState(0.70)
   const [baselineEditing, setBaselineEditing] = useState(false)
 
-  const handleUpload = useCallback(async (fileName) => {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await fetch(`${API_URL}/api/inventory`)
-      const data = await res.json()
-      setInventory(data)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
+  const handleUpload = useCallback((data) => {
+    setInventory(data)
   }, [])
 
-  const applyBaseline = useCallback(async () => {
+  const applyBaseline = useCallback(() => {
     setLoading(true)
     setError('')
     try {
-      await fetch(`${API_URL}/api/pricing/baseline`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ percent: baselinePercent, shippingCost: baselineShip }),
-      })
-      const res = await fetch(`${API_URL}/api/inventory`)
-      const data = await res.json()
-      setInventory(data)
+      const updated = applyBaseline(inventory, baselinePercent, baselineShip)
+      setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [baselinePercent, baselineShip])
+  }, [inventory, baselinePercent, baselineShip])
 
-  const applyRules = useCallback(async () => {
+  const applyRules = useCallback(() => {
     setLoading(true)
     setError('')
     try {
-      await fetch(`${API_URL}/api/pricing/apply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rules }),
-      })
-      const res = await fetch(`${API_URL}/api/inventory`)
-      const data = await res.json()
-      setInventory(data)
+      const updated = applyRules(inventory, rules)
+      setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [rules])
+  }, [inventory, rules])
 
   const handleExport = () => {
-    window.open(`${API_URL}/api/export`, '_blank')
+    exportCSV(inventory)
   }
 
   return (

@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState } from 'react'
-import { API_URL } from '../config'
+import { parseCSV } from '../utils/csvUtils'
 
 export default function CSVUpload({ onUpload, disabled }) {
   const fileInputRef = useRef(null)
@@ -12,17 +12,11 @@ export default function CSVUpload({ onUpload, disabled }) {
     setUploadError('')
     setUploading(true)
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     try {
-      await fetch(`${API_URL}/api/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-      onUpload(file.name)
+      const data = await parseCSV(file)
+      onUpload(data)
     } catch (err) {
-      setUploadError(`Upload failed: ${err.message}`)
+      setUploadError(`Failed to parse CSV: ${err.message}`)
     } finally {
       setUploading(false)
     }
