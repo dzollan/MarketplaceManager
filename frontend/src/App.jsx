@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react'
 import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
-import InventoryGrid from './components/InventoryGrid'
 import PricingRules from './components/PricingRules'
 import { applyBaseline as doBaseline, applyRules as doRules, exportCSV } from './utils/csvUtils'
 import './App.css'
@@ -11,7 +10,7 @@ function App() {
   const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [viewMode, setViewMode] = useState('table')
+  const [viewMode, setViewMode] = useState('table') // kept for backwards compat, only table is used
   const [baselinePercent, setBaselinePercent] = useState(105)
   const [baselineShip, setBaselineShip] = useState(0.70)
   const [baselineEditing, setBaselineEditing] = useState(false)
@@ -26,6 +25,13 @@ function App() {
     }))
     setInventory(withOriginalPrice)
   }, [])
+
+  const handlePriceEdit = useCallback((index, newPrice) => {
+    const updated = [...inventory]
+    const price = Math.round(newPrice * 100) / 100
+    updated[index] = { ...updated[index], 'TCG Marketplace Price': price.toFixed(2) }
+    setInventory(updated)
+  }, [inventory])
 
   const applyBaseline = useCallback(() => {
     setLoading(true)
@@ -150,25 +156,8 @@ function App() {
         <main className="main-content">
           {error && <div className="error-banner">{error}</div>}
           {loading && <div className="loading-banner">Processing...</div>}
-          <div className="view-toggle">
-            <button
-              className={viewMode === 'table' ? 'active' : ''}
-              onClick={() => setViewMode('table')}
-            >
-              ☰ Table
-            </button>
-            <button
-              className={viewMode === 'grid' ? 'active' : ''}
-              onClick={() => setViewMode('grid')}
-            >
-              ⊞ Grid
-            </button>
-          </div>
-          {viewMode === 'table' ? (
-            <InventoryTable inventory={inventory} />
-          ) : (
-            <InventoryGrid inventory={inventory} />
-          )}
+
+          <InventoryTable inventory={inventory} onPriceEdit={handlePriceEdit} darkMode={darkMode} />
         </main>
       </div>
     </div>

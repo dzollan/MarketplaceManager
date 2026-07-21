@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table'
 
-export default function InventoryTable({ inventory }) {
+export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnFilters, setColumnFilters] = useState([])
+  const [editingCell, setEditingCell] = useState(null) // { rowIndex: number, value: string }
 
   const columns = [
     {
@@ -59,7 +60,51 @@ export default function InventoryTable({ inventory }) {
       id: 'YourPrice',
       header: 'Your Price',
       accessorFn: (row) => parseFloat(row['TCG Marketplace Price']) || 0,
-      cell: (info) => <span className="price-cell">${info.getValue().toFixed(2)}</span>,
+      cell: (info) => {
+        const rowIdx = info.row.index
+        const isEditing = editingCell?.rowIndex === rowIdx
+        const currentPrice = parseFloat(row['TCG Marketplace Price']) || 0
+
+        if (isEditing) {
+          const handleBlur = () => {
+            const newPrice = parseFloat(editingCell.value) || 0
+            onPriceEdit(rowIdx, newPrice)
+            setEditingCell(null)
+          }
+
+          const handleKeyDown = (e) => {
+            if (e.key === 'Enter') {
+              handleBlur()
+            } else if (e.key === 'Escape') {
+              setEditingCell(null)
+            }
+          }
+
+          return (
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              className="price-edit-input"
+              value={editingCell.value}
+              onChange={(e) => setEditingCell({ rowIndex: rowIdx, value: e.target.value })}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              data-dark={darkMode}
+            />
+          )
+        }
+
+        return (
+          <span
+            className="price-cell price-editable"
+            onClick={() => setEditingCell({ rowIndex: rowIdx, value: currentPrice.toFixed(2) })}
+          >
+            ${currentPrice.toFixed(2)}
+          </span>
+        )
+      },
     },
     {
       id: 'OldPrice',

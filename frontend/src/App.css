@@ -148,6 +148,7 @@
 
 .app.dark .inventory-table td {
   border-bottom-color: #3f3f46;
+  color: #e4e4e7;
 }
 
 .app.dark .inventory-table tbody tr:hover {
@@ -536,6 +537,70 @@
 .price-cell {
   font-weight: 600;
   color: #198754;
+}
+
+.price-editable {
+  cursor: pointer;
+  border-bottom: 1px dashed #198754;
+  transition: background 0.15s;
+}
+
+.price-editable:hover {
+  background: rgba(25, 135, 84, 0.08);
+  border-radius: 4px;
+}
+
+.price-edit-input {
+  width: 80px;
+  padding: 2px 6px;
+  border: 2px solid #198754;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #198754;
+  outline: none;
+}
+
+.price-edit-input[data-dark="true"] {
+  background: #27272a;
+  color: #4ade80;
+  border-color: #4ade80;
+}
+
+.price-up {
+  color: #2e7d32;
+}
+
+.price-down {
+  color: #c62828;
+}
+
+.price-same {
+  color: #888;
+}
+
+.app.dark .price-up {
+  color: #4ade80;
+}
+
+.app.dark .price-down {
+  color: #f87171;
+}
+
+.app.dark .price-same {
+  color: #a1a1aa;
+}
+
+.app.dark .price-cell {
+  color: #4ade80;
+}
+
+.app.dark .price-old {
+  color: #a1a1aa;
+}
+
+.app.dark .price-editable:hover {
+  background: rgba(74, 222, 128, 0.1);
 }
 
 /* Pagination */
