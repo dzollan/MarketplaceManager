@@ -16,6 +16,7 @@ function App() {
   const [baselineShip, setBaselineShip] = useState(0.70)
   const [baselineEditing, setBaselineEditing] = useState(false)
   const [ignoreZeroQty, setIgnoreZeroQty] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
 
   const handleUpload = useCallback((data) => {
     // Store the original marketplace price
@@ -57,13 +58,18 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={"app" + (darkMode ? " dark" : "")}>
       <header className="app-header">
         <h1>🃏 TCG Marketplace Pricing Manager</h1>
-        <span className="app-credits">
-          by Raboot
-          <span className="app-version">• Updated {new Date(__BUILD_TIME__).toLocaleString()}</span>
-        </span>
+        <div className="app-right">
+          <button className="btn-dark-toggle" onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <span className="app-credits">
+            by Raboot
+            <span className="app-version">• Updated {new Date(__BUILD_TIME__).toLocaleString()}</span>
+          </span>
+        </div>
       </header>
 
       <div className="layout">

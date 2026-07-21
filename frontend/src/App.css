@@ -34,6 +34,206 @@
   margin-left: 8px;
 }
 
+.app-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-dark-toggle {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s;
+}
+
+.btn-dark-toggle:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Dark mode */
+.app.dark {
+  background: #18181b;
+}
+
+.app.dark .sidebar {
+  background: #1e1e24;
+  border-right-color: #333;
+}
+
+.app.dark .card {
+  background: #27272a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.app.dark .card-desc {
+  color: #a1a1aa;
+}
+
+.app.dark .card h2 {
+  color: #e4e4e7;
+}
+
+.app.dark .btn-primary {
+  background: #3b82f6;
+}
+
+.app.dark .btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.app.dark .btn-secondary {
+  background: #3f3f46;
+  color: #e4e4e7;
+}
+
+.app.dark .btn-secondary:hover:not(:disabled) {
+  background: #52525b;
+}
+
+.app.dark .btn-sm {
+  background: #3f3f46;
+  color: #e4e4e7;
+}
+
+.app.dark .btn-sm:hover:not(:disabled) {
+  background: #52525b;
+}
+
+.app.dark .btn-remove:hover {
+  color: #f87171;
+}
+
+.app.dark .select,
+.app.dark .input-small {
+  background: #27272a;
+  border-color: #52525b;
+  color: #e4e4e7;
+}
+
+.app.dark .rule-item {
+  background: #1f1f23;
+  color: #e4e4e7;
+}
+
+.app.dark .error-banner {
+  background: #3b1f1f;
+  color: #fca5a5;
+}
+
+.app.dark .loading-banner {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+.app.dark .empty-state {
+  color: #71717a;
+}
+
+.app.dark .table-container {
+  background: #27272a;
+}
+
+.app.dark .table-header {
+  border-bottom-color: #3f3f46;
+}
+
+.app.dark .inventory-table th {
+  background: #2a2a30;
+  color: #e4e4e7;
+}
+
+.app.dark .inventory-table td {
+  border-bottom-color: #3f3f46;
+}
+
+.app.dark .inventory-table tbody tr:hover {
+  background: #2a2a31;
+}
+
+.app.dark .product-subtitle {
+  color: #888;
+}
+
+.app.dark .pagination {
+  border-top-color: #3f3f46;
+}
+
+.app.dark .page-numbers {
+  color: #a1a1aa;
+}
+
+.app.dark .btn-edit {
+  border-color: #52525b;
+  color: #a1a1aa;
+}
+
+.app.dark .btn-edit:hover {
+  background: #3f3f46;
+  color: #e4e4e7;
+}
+
+.app.dark .baseline-settings {
+  background: #1f1f23;
+}
+
+.app.dark .baseline-row label {
+  color: #a1a1aa;
+}
+
+.app.dark .view-toggle button {
+  background: #27272a;
+  border-color: #52525b;
+  color: #e4e4e7;
+}
+
+.app.dark .view-toggle button:hover {
+  background: #3f3f46;
+}
+
+.app.dark .view-toggle button.active {
+  background: #1a1a2e;
+  color: white;
+  border-color: #1a1a2e;
+}
+
+.app.dark .grid-container {
+  background: #27272a;
+}
+
+.app.dark .grid-header {
+  border-bottom-color: #3f3f46;
+}
+
+.app.dark .grid-card {
+  border-color: #3f3f46;
+}
+
+.app.dark .grid-card-top {
+  background: #1f1f23;
+  border-bottom-color: #3f3f46;
+}
+
+.app.dark .checkbox-row label {
+  color: #a1a1aa;
+}
+
+.app.dark .filter-col label,
+.app.dark .input-filter,
+.app.dark .input-search {
+  background: #27272a;
+  border-color: #52525b;
+  color: #e4e4e7;
+}
+
+.app.dark .toolbar {
+  background: #27272a;
+  border-bottom-color: #3f3f46;
+}
+
 .layout {
   display: flex;
   flex: 1;
