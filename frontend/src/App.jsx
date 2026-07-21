@@ -16,6 +16,7 @@ function App() {
   const [baselineEditing, setBaselineEditing] = useState(false)
   const [ignoreZeroQty, setIgnoreZeroQty] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   const handleUpload = useCallback((data) => {
     // Store the original marketplace price
@@ -68,6 +69,9 @@ function App() {
       <header className="app-header">
         <h1>🃏 TCG Marketplace Pricing Manager</h1>
         <div className="app-right">
+          <button className="btn-dark-toggle" onClick={() => setShowHelp(true)}>
+            ❓
+          </button>
           <button className="btn-dark-toggle" onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -160,6 +164,40 @@ function App() {
           <InventoryTable inventory={inventory} onPriceEdit={handlePriceEdit} darkMode={darkMode} />
         </main>
       </div>
+
+      {showHelp && (
+        <div className="help-overlay" onClick={() => setShowHelp(false)}>
+          <div className="help-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="help-header">
+              <h2>How to Use</h2>
+              <button className="help-close" onClick={() => setShowHelp(false)}>✕</button>
+            </div>
+            <ol className="help-steps">
+              <li>
+                <strong>TCGplayer Seller Portal</strong> — Go to the Pricing tab and export your live inventory to a CSV file.
+              </li>
+              <li>
+                <strong>Upload & Apply Rules</strong> — Upload the CSV here, then apply baseline pricing and/or bulk rules as you see fit.
+              </li>
+              <li>
+                <strong>Review & Edit</strong> — Sort your inventory and click on any price in the table to manually modify outliers.
+              </li>
+              <li>
+                <strong>Export</strong> — Click "Export Updated CSV" to download your modified pricing.
+              </li>
+              <li>
+                <strong>TCGplayer Staged Inventory</strong> — In the Pricing tab, go to Staged Inventory. Clear any existing staged items, then import your exported CSV.
+              </li>
+              <li>
+                <strong>Confirm Changes</strong> — Confirm the changes to push them to your live inventory.
+              </li>
+              <li>
+                <strong>⏳ Patience</strong> — If you're updating many items, it can take a while for prices to actually update in your inventory.
+              </li>
+            </ol>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
