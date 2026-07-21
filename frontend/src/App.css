@@ -119,6 +119,14 @@
   color: #e4e4e7;
 }
 
+.app.dark .form-row label {
+  color: #d4d4d8;
+}
+
+.app.dark .rule-builder {
+  color: #d4d4d8;
+}
+
 .app.dark .error-banner {
   background: #3b1f1f;
   color: #fca5a5;
