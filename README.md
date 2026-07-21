@@ -2,30 +2,32 @@
 
 Web app for managing TCG Player marketplace pricing via bulk pricing rules.
 
+All processing happens in the browser — no backend required.
+
 ## Setup
 
 ```bash
-# Install all dependencies
-npm run install-all
+cd frontend
+npm install
 ```
 
 ## Running
 
-You'll need two terminals:
-
-**Terminal 1 (Backend):**
-```bash
-cd backend
-npm start
-```
-
-**Terminal 2 (Frontend):**
 ```bash
 cd frontend
 npm run dev
 ```
 
 Then open http://localhost:5173 in your browser.
+
+## Deploying to GitHub Pages
+
+```bash
+cd frontend
+npm run deploy
+```
+
+Then go to your GitHub repo → **Settings → Pages → Source: Deploy from a branch → `gh-pages` branch**.
 
 ## Usage
 
@@ -41,3 +43,4 @@ Then open http://localhost:5173 in your browser.
 - Set bulk pricing rules based on quantity thresholds
 - Apply pricing rules to all inventory
 - Export updated pricing as CSV
+- No backend required — everything runs in the browser
