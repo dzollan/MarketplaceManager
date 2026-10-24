@@ -1,28 +1,34 @@
 import { useState, useCallback } from 'react'
 import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
-import PricingRules from './components/PricingRules'
-import { applyBaseline as doBaseline, applyRules as doRules, exportCSV } from './utils/csvUtils'
+import PipelinePanel from './components/PipelinePanel'
+import SalesDataUpload from './components/SalesDataUpload'
+import { exportCSV } from './utils/csvUtils'
+import { applyPipeline, splitCondition } from './utils/pricingPipeline'
 import './App.css'
 
 function App() {
   const [inventory, setInventory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [viewMode, setViewMode] = useState('table') // kept for backwards compat, only table is used
-  const [baselinePercent, setBaselinePercent] = useState(105)
-  const [baselineShip, setBaselineShip] = useState(0.70)
-  const [baselineEditing, setBaselineEditing] = useState(false)
+  const [baseline, setBaseline] = useState({ type: 'baseline', percent: 105, shippingCost: 0.70 })
+  const [rules, setRules] = useState([])
   const [ignoreZeroQty, setIgnoreZeroQty] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
 
   const handleUpload = useCallback((data) => {
-    // Store the original marketplace price
-    const withOriginalPrice = data.map((item) => ({
-      ...item,
-      _originalPrice: parseFloat(item['TCG Marketplace Price']) || 0,
-    }))
+    // Store the original marketplace price and split the combined
+    // Condition column into pure Condition + Edition (foil variants included).
+    const withOriginalPrice = data.map((item) => {
+      const { condition, edition } = splitCondition(item['Condition'])
+      return {
+        ...item,
+        Condition: condition,
+        Edition: edition,
+        _originalPrice: parseFloat(item['TCG Marketplace Price']) || 0,
+      }
+    })
     setInventory(withOriginalPrice)
   }, [])
 
@@ -33,34 +39,28 @@ function App() {
     setInventory(updated)
   }, [inventory])
 
-  const applyBaseline = useCallback(() => {
+  const runPipeline = useCallback(() => {
     setLoading(true)
     setError('')
     try {
-      const updated = doBaseline(inventory, baselinePercent, baselineShip, ignoreZeroQty)
+      const steps = [baseline, ...rules]
+      const updated = applyPipeline(inventory, steps, ignoreZeroQty)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [inventory, baselinePercent, baselineShip, ignoreZeroQty])
-
-  const applyRules = useCallback((ruleList) => {
-    setLoading(true)
-    setError('')
-    try {
-      const updated = doRules(inventory, ruleList, ignoreZeroQty)
-      setInventory(updated)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }, [inventory, ignoreZeroQty])
+  }, [inventory, baseline, rules, ignoreZeroQty])
 
   const handleExport = () => {
-    exportCSV(inventory)
+    // Recombine Condition + Edition into the single Condition column
+    // TCGplayer expects, and drop the internal Edition column.
+    const forExport = inventory.map(({ Edition, ...rest }) => ({
+      ...rest,
+      Condition: [rest.Condition, Edition].filter(Boolean).join(' '),
+    }))
+    exportCSV(forExport)
   }
 
   return (
@@ -84,67 +84,31 @@ function App() {
       <div className="layout">
         <aside className="sidebar">
           <CSVUpload onUpload={handleUpload} disabled={loading} />
-          <div className="card">
-            <div className="card-header">
-              <h2>📊 Baseline Pricing</h2>
-              <button
-                className="btn-edit"
-                onClick={() => setBaselineEditing(!baselineEditing)}
-              >
-                {baselineEditing ? '✓ Save' : '✎ Edit'}
-              </button>
-            </div>
-            <p className="card-desc">
-              Set all items to {baselinePercent}% of whichever is greater: market price or (TCG low + ship − ${baselineShip.toFixed(2)} shipping cost)
-            </p>
-            {baselineEditing && (
-              <div className="baseline-settings">
-                <div className="baseline-row">
-                  <label>Markup %</label>
-                  <input
-                    type="number"
-                    min="1"
-                    step="0.1"
-                    value={baselinePercent}
-                    onChange={(e) => setBaselinePercent(Number(e.target.value))}
-                    className="input-small"
-                  />
-                </div>
-                <div className="baseline-row">
-                  <label>Shipping cost ($)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={baselineShip}
-                    onChange={(e) => setBaselineShip(Number(e.target.value))}
-                    className="input-small"
-                  />
-                </div>
-              </div>
-            )}
-            <div className="card-row checkbox-row">
-              <input
-                type="checkbox"
-                id="ignoreZeroQty"
-                checked={ignoreZeroQty}
-                onChange={(e) => setIgnoreZeroQty(e.target.checked)}
-              />
-              <label htmlFor="ignoreZeroQty">Skip items with 0 qty</label>
-            </div>
-            <button
-              className="btn btn-baseline"
-              onClick={applyBaseline}
-              disabled={inventory.length === 0 || loading}
-            >
-              Apply Baseline
-            </button>
-          </div>
-          <PricingRules
-            onApply={applyRules}
-            canApply={inventory.length > 0}
+          <SalesDataUpload
+            inventory={inventory}
+            onMerge={setInventory}
             disabled={loading}
           />
+          <PipelinePanel
+            baseline={baseline}
+            setBaseline={setBaseline}
+            rules={rules}
+            setRules={setRules}
+            onRun={runPipeline}
+            canRun={inventory.length > 0}
+            disabled={loading}
+            inventory={inventory}
+            ignoreZeroQty={ignoreZeroQty}
+          />
+          <div className="card-row checkbox-row">
+            <input
+              type="checkbox"
+              id="ignoreZeroQty"
+              checked={ignoreZeroQty}
+              onChange={(e) => setIgnoreZeroQty(e.target.checked)}
+            />
+            <label htmlFor="ignoreZeroQty">Skip items with 0 qty</label>
+          </div>
           <button
             className="btn btn-export"
             onClick={handleExport}
@@ -174,7 +138,7 @@ function App() {
                 <strong>TCGplayer Seller Portal</strong> — Go to the Pricing tab and export your live inventory to a CSV file.
               </li>
               <li>
-                <strong>Upload & Apply Rules</strong> — Upload the CSV here, then apply baseline pricing and/or bulk rules as you see fit.
+                <strong>Upload & Build Pipeline</strong> — Upload the CSV here. Optionally merge a sales-data CSV (from the CardSalesData pipeline) to add Avg Daily Sold. Then build your pricing pipeline: baseline first, then as many rules as you like — reorder, add, or remove steps, and hit "Run Pipeline".
               </li>
               <li>
                 <strong>Review & Edit</strong> — Sort your inventory and click on any price in the table to manually modify outliers.
