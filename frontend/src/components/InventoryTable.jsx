@@ -16,6 +16,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
   const [editingCell, setEditingCell] = useState(null) // { rowIndex: number, value: string }
   const [showColMenu, setShowColMenu] = useState(false)
   const [colWidths, setColWidths] = useState({})
+  const [columnOrder, setColumnOrder] = useState(null)
   const [dragColId, setDragColId] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
   const colMenuRef = useRef(null)
@@ -61,8 +62,8 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
 
   // Column reorder: drag the header grip onto another header
   const startDrag = useCallback((e, column) => {
-    e.preventDefault()
     e.stopPropagation()
+    e.dataTransfer.effectAllowed = 'move'
     setDragColId(column.id)
   }, [])
 
@@ -74,7 +75,18 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
   const handleHeaderDrop = useCallback((column) => {
     if (dragColId && dragColId !== column.id) {
       const table = tableRef.current
-      if (table) table.reorderColumns(dragColId, column.id)
+      if (table) {
+        setColumnOrder((prev) => {
+          const order = prev ?? table.getAllLeafColumns().map((c) => c.id)
+          const from = order.indexOf(dragColId)
+          const to = order.indexOf(column.id)
+          if (from === -1 || to === -1) return prev
+          const next = [...order]
+          next.splice(from, 1)
+          next.splice(to, 0, dragColId)
+          return next
+        })
+      }
     }
     setDragColId(null)
     setDropTarget(null)
@@ -242,6 +254,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
       globalFilter,
       columnFilters,
       columnSizing: colWidths,
+      columnOrder,
     },
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
@@ -351,7 +364,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
                         (dragColId === column.id ? 'dragging' : '')
                       }
                     >
-                      {column.getCanReorder() && (
+                      {column.columnDef.enableReordering !== false && (
                         <span
                           className="col-grip"
                           draggable
