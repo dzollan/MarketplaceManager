@@ -52,23 +52,26 @@ function App() {
       : data
     // Store the original marketplace price and split the combined
     // Condition column into pure Condition + Edition (foil variants included).
-    const withOriginalPrice = rows.map((item) => {
+    // Each item gets a stable _uid so price edits target the right row
+    // regardless of pagination, sorting, or filtering.
+    const withOriginalPrice = rows.map((item, i) => {
       const { condition, edition } = splitCondition(item['Condition'])
       return {
         ...item,
         Condition: condition,
         Edition: edition,
         _originalPrice: parseFloat(item['TCG Marketplace Price']) || 0,
+        _uid: `${Date.now()}-${i}`,
       }
     })
     setInventory(withOriginalPrice)
   }, [ignoreZeroQty])
 
-  const handlePriceEdit = useCallback((index, newPrice) => {
+  const handlePriceEdit = useCallback((uid, newPrice) => {
     const price = Math.round(newPrice * 100) / 100
     setInventory((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, 'TCG Marketplace Price': price.toFixed(2) } : item
+      prev.map((item) =>
+        item._uid === uid ? { ...item, 'TCG Marketplace Price': price.toFixed(2) } : item
       )
     )
   }, [])
@@ -90,7 +93,7 @@ function App() {
   const handleExport = () => {
     // Recombine Condition + Edition into the single Condition column
     // TCGplayer expects, and drop the internal Edition column.
-    const forExport = inventory.map(({ Edition, ...rest }) => ({
+    const forExport = inventory.map(({ Edition, _uid, ...rest }) => ({
       ...rest,
       Condition: [rest.Condition, Edition].filter(Boolean).join(' '),
     }))

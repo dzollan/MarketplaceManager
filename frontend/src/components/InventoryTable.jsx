@@ -33,7 +33,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
   const savedLayout = useRef(loadLayout()).current
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnFilters, setColumnFilters] = useState([])
-  const [editingCell, setEditingCell] = useState(null) // { rowIndex: number, value: string }
+  const [editingCell, setEditingCell] = useState(null) // { rowKey: string, value: string }
   const [showColMenu, setShowColMenu] = useState(false)
   const [colWidths, setColWidths] = useState(savedLayout?.colWidths ?? {})
   const [columnOrder, setColumnOrder] = useState(savedLayout?.columnOrder ?? null)
@@ -208,15 +208,15 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
       header: 'Your Price',
       accessorFn: (row) => parseFloat(row['TCG Marketplace Price']) || 0,
       cell: (info) => {
-        const rowIdx = info.row.originalIndex
         const row = info.row.original
-        const isEditing = editingCell?.rowIndex === rowIdx
+        const rowKey = row._uid
+        const isEditing = editingCell?.rowKey === rowKey
         const currentPrice = parseFloat(row['TCG Marketplace Price']) || 0
 
         if (isEditing) {
           const handleBlur = () => {
             const newPrice = parseFloat(editingCell.value) || 0
-            onPriceEdit(rowIdx, newPrice)
+            onPriceEdit(rowKey, newPrice)
             setEditingCell(null)
           }
 
@@ -235,7 +235,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
               min="0"
               className="price-edit-input"
               value={editingCell.value}
-              onChange={(e) => setEditingCell({ rowIndex: rowIdx, value: e.target.value })}
+              onChange={(e) => setEditingCell({ rowKey, value: e.target.value })}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               autoFocus
@@ -247,7 +247,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
         return (
           <span
             className="price-cell price-editable"
-            onClick={() => setEditingCell({ rowIndex: rowIdx, value: currentPrice.toFixed(2) })}
+            onClick={() => setEditingCell({ rowKey, value: currentPrice.toFixed(2) })}
           >
             ${currentPrice.toFixed(2)}
           </span>
@@ -300,6 +300,17 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
     },
   })
   tableRef.current = table
+
+  // Cancel any in-progress price edit when the visible rows change
+  // (page, filter, sort, or a new inventory upload) so the edit can't
+  // commit to a stale row. Sorting/filter state are serialized to
+  // stable strings because the table returns fresh array refs each render.
+  const pageIndex = table.getState().pagination.pageIndex
+  const sortingKey = table.getState().sorting.map((s) => `${s.id}:${s.desc}`).join(',')
+  const filterKey = columnFilters.map((f) => `${f.id}:${f.value}`).join(',')
+  useEffect(() => {
+    setEditingCell(null)
+  }, [inventory, pageIndex, globalFilter, filterKey, sortingKey])
 
   if (inventory.length === 0) {
     return (

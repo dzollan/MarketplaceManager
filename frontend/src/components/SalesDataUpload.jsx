@@ -28,7 +28,7 @@ export default function SalesDataUpload({ inventory, onMerge, disabled }) {
     } catch (err) {
       setError(`Failed to parse CSV: ${err.message}`)
     } finally {
-      e.target.value = ''
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
