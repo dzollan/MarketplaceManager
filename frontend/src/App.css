@@ -99,6 +99,52 @@
   color: #e4e4e7;
 }
 
+/* Pipeline panel — dark mode text contrast */
+.app.dark .pipeline-step {
+  color: #d4d4d8;
+}
+
+.app.dark .step-header {
+  color: #d4d4d8;
+}
+
+.app.dark .step-title {
+  color: #d4d4d8;
+}
+
+.app.dark .step-summary {
+  color: #a1a1aa;
+}
+
+.app.dark .step-settings {
+  color: #a1a1aa;
+}
+
+.app.dark .step-settings label {
+  color: #a1a1aa;
+}
+
+.app.dark .step-settings input {
+  color: #e4e4e7;
+  background: #27272a;
+  border-color: #3f3f46;
+}
+
+.app.dark .step-settings input::placeholder {
+  color: #777;
+}
+
+.app.dark .step-settings select {
+  color: #e4e4e7;
+  background: #27272a;
+  border-color: #3f3f46;
+}
+
+.app.dark .step-settings select option {
+  background: #27272a;
+  color: #e4e4e7;
+}
+
 .app.dark .btn-sm:hover:not(:disabled) {
   background: #52525b;
 }
