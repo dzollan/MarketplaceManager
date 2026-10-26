@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
 import PipelinePanel from './components/PipelinePanel'
@@ -13,14 +13,46 @@ function App() {
   const [error, setError] = useState('')
   const [baseline, setBaseline] = useState({ type: 'baseline', percent: 105, shippingCost: 0.70 })
   const [rules, setRules] = useState([])
-  const [ignoreZeroQty, setIgnoreZeroQty] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [ignoreZeroQty, setIgnoreZeroQty] = useState(() => {
+    try {
+      return localStorage.getItem('mm-ignore-zero-qty') !== '0'
+    } catch {
+      return true
+    }
+  })
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem('mm-dark-mode') === '1'
+    } catch {
+      return false
+    }
+  })
   const [showHelp, setShowHelp] = useState(false)
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('mm-dark-mode', darkMode ? '1' : '0')
+    } catch {
+      // storage unavailable — setting just won't persist
+    }
+  }, [darkMode])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('mm-ignore-zero-qty', ignoreZeroQty ? '1' : '0')
+    } catch {
+      // storage unavailable — setting just won't persist
+    }
+  }, [ignoreZeroQty])
+
   const handleUpload = useCallback((data) => {
+    // By default, completely ignore items with 0 total quantity.
+    const rows = ignoreZeroQty
+      ? data.filter((item) => (parseInt(item['Total Quantity']) || 0) !== 0)
+      : data
     // Store the original marketplace price and split the combined
     // Condition column into pure Condition + Edition (foil variants included).
-    const withOriginalPrice = data.map((item) => {
+    const withOriginalPrice = rows.map((item) => {
       const { condition, edition } = splitCondition(item['Condition'])
       return {
         ...item,
@@ -30,28 +62,30 @@ function App() {
       }
     })
     setInventory(withOriginalPrice)
-  }, [])
+  }, [ignoreZeroQty])
 
   const handlePriceEdit = useCallback((index, newPrice) => {
-    const updated = [...inventory]
     const price = Math.round(newPrice * 100) / 100
-    updated[index] = { ...updated[index], 'TCG Marketplace Price': price.toFixed(2) }
-    setInventory(updated)
-  }, [inventory])
+    setInventory((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, 'TCG Marketplace Price': price.toFixed(2) } : item
+      )
+    )
+  }, [])
 
   const runPipeline = useCallback(() => {
     setLoading(true)
     setError('')
     try {
       const steps = [baseline, ...rules]
-      const updated = applyPipeline(inventory, steps, ignoreZeroQty)
+      const updated = applyPipeline(inventory, steps)
       setInventory(updated)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [inventory, baseline, rules, ignoreZeroQty])
+  }, [inventory, baseline, rules])
 
   const handleExport = () => {
     // Recombine Condition + Edition into the single Condition column
@@ -84,6 +118,15 @@ function App() {
       <div className="layout">
         <aside className="sidebar">
           <CSVUpload onUpload={handleUpload} disabled={loading} />
+          <div className="card-row checkbox-row">
+            <input
+              type="checkbox"
+              id="ignoreZeroQty"
+              checked={ignoreZeroQty}
+              onChange={(e) => setIgnoreZeroQty(e.target.checked)}
+            />
+            <label htmlFor="ignoreZeroQty">Ignore 0-qty items on upload</label>
+          </div>
           <SalesDataUpload
             inventory={inventory}
             onMerge={setInventory}
@@ -98,17 +141,7 @@ function App() {
             canRun={inventory.length > 0}
             disabled={loading}
             inventory={inventory}
-            ignoreZeroQty={ignoreZeroQty}
           />
-          <div className="card-row checkbox-row">
-            <input
-              type="checkbox"
-              id="ignoreZeroQty"
-              checked={ignoreZeroQty}
-              onChange={(e) => setIgnoreZeroQty(e.target.checked)}
-            />
-            <label htmlFor="ignoreZeroQty">Skip items with 0 qty</label>
-          </div>
           <button
             className="btn btn-export"
             onClick={handleExport}

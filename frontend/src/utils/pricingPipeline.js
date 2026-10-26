@@ -125,10 +125,7 @@ function applyAction(price, action) {
   }
 }
 
-function applyStep(item, step, ignoreZeroQty) {
-  const qty = parseInt(item['Total Quantity']) || 0
-  if (ignoreZeroQty && qty === 0) return item
-
+function applyStep(item, step) {
   if (step.type === 'baseline') {
     const marketPrice = parseFloat(item['TCG Market Price']) || 0
     const lowWithShip = parseFloat(item['TCG Low Price With Shipping']) || 0
@@ -152,20 +149,17 @@ function applyStep(item, step, ignoreZeroQty) {
  * Apply the full pipeline sequentially.
  * steps: array of step objects (baseline and/or rules, in order).
  */
-export function applyPipeline(inventory, steps, ignoreZeroQty = false) {
+export function applyPipeline(inventory, steps) {
   let result = inventory
   for (const step of steps) {
-    result = result.map((item) => applyStep(item, step, ignoreZeroQty))
+    result = result.map((item) => applyStep(item, step))
   }
   return result
 }
 
-/** How many items a single step would affect (baseline: all non-skipped). */
-export function countMatches(inventory, step, ignoreZeroQty = false) {
-  if (step.type === 'baseline') {
-    if (!ignoreZeroQty) return inventory.length
-    return inventory.filter((i) => (parseInt(i['Total Quantity']) || 0) !== 0).length
-  }
+/** How many items a single step would affect (baseline: all items). */
+export function countMatches(inventory, step) {
+  if (step.type === 'baseline') return inventory.length
   return inventory.filter((i) => conditionMet(i, step.condition)).length
 }
 

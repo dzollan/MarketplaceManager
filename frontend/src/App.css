@@ -633,6 +633,13 @@
   background: #f0f2ff;
 }
 
+.col-menu-reset {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid #ddd;
+  align-self: flex-start;
+}
+
 .table-scroll {
   overflow-x: auto;
 }

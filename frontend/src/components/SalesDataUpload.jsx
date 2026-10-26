@@ -16,7 +16,8 @@ export default function SalesDataUpload({ inventory, onMerge, disabled }) {
     try {
       const rows = await parseCSV(file)
       const required = ['TCGplayer Id', 'Avg Daily Sold']
-      const missing = required.filter((col) => !rows[0]?.[col] && !Object.keys(rows[0] || {}).includes(col))
+      const present = Object.keys(rows[0] || {})
+      const missing = required.filter((col) => !present.includes(col))
       if (missing.length > 0) {
         setError(`Sales CSV is missing column(s): ${missing.join(', ')}. Run the CardSalesData pipeline first.`)
         return

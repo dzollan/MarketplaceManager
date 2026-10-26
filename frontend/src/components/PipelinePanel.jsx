@@ -9,9 +9,9 @@ import {
   describeCondition,
 } from '../utils/pricingPipeline'
 
-function BaselineStep({ baseline, setBaseline, inventory, ignoreZeroQty }) {
+function BaselineStep({ baseline, setBaseline, inventory }) {
   const [editing, setEditing] = useState(false)
-  const matches = countMatches(inventory, baseline, ignoreZeroQty)
+  const matches = countMatches(inventory, baseline)
 
   return (
     <div className="pipeline-step step-baseline">
@@ -56,8 +56,8 @@ function BaselineStep({ baseline, setBaseline, inventory, ignoreZeroQty }) {
   )
 }
 
-function RuleStep({ rule, setRule, remove, moveUp, moveDown, canMoveUp, canMoveDown, inventory, ignoreZeroQty }) {
-  const matches = countMatches(inventory, rule, ignoreZeroQty)
+function RuleStep({ rule, setRule, remove, moveUp, moveDown, canMoveUp, canMoveDown, inventory }) {
+  const matches = countMatches(inventory, rule)
   const field = CONDITION_FIELDS.find((f) => f.id === rule.condition.field)
   const isText = field?.kind === 'text'
   const operators = isText ? TEXT_OPERATORS : NUMERIC_OPERATORS
@@ -175,7 +175,6 @@ export default function PipelinePanel({
   canRun,
   disabled,
   inventory,
-  ignoreZeroQty,
 }) {
   const updateRule = (newRule) => {
     setRules(rules.map((r) => (r.id === newRule.id ? newRule : r)))
@@ -199,7 +198,6 @@ export default function PipelinePanel({
           baseline={baseline}
           setBaseline={setBaseline}
           inventory={inventory}
-          ignoreZeroQty={ignoreZeroQty}
         />
 
         {rules.map((rule, i) => (
@@ -213,7 +211,6 @@ export default function PipelinePanel({
             canMoveUp={i > 0}
             canMoveDown={i < rules.length - 1}
             inventory={inventory}
-            ignoreZeroQty={ignoreZeroQty}
           />
         ))}
       </div>

@@ -19,6 +19,7 @@ export default function CSVUpload({ onUpload, disabled }) {
       setUploadError(`Failed to parse CSV: ${err.message}`)
     } finally {
       setUploading(false)
+      e.target.value = ''
     }
   }, [onUpload])
 

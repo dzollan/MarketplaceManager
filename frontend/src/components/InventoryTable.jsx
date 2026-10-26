@@ -9,19 +9,57 @@ import {
 } from '@tanstack/react-table'
 
 const MIN_COL_WIDTH = 50
+const LAYOUT_KEY = 'mm-table-layout-v1'
+
+function loadLayout() {
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY)
+    const layout = raw ? JSON.parse(raw) : null
+    if (layout?.columnOrder) {
+      // Drop stale column IDs (e.g. the removed "#" index column)
+      layout.columnOrder = layout.columnOrder.filter((id) => id !== 'index')
+      // New columns default to the left (e.g. Product Line)
+      if (!layout.columnOrder.includes('ProductLine')) {
+        layout.columnOrder = ['ProductLine', ...layout.columnOrder]
+      }
+    }
+    return layout
+  } catch {
+    return null
+  }
+}
 
 export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
+  const savedLayout = useRef(loadLayout()).current
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnFilters, setColumnFilters] = useState([])
   const [editingCell, setEditingCell] = useState(null) // { rowIndex: number, value: string }
   const [showColMenu, setShowColMenu] = useState(false)
-  const [colWidths, setColWidths] = useState({})
-  const [columnOrder, setColumnOrder] = useState(null)
+  const [colWidths, setColWidths] = useState(savedLayout?.colWidths ?? {})
+  const [columnOrder, setColumnOrder] = useState(savedLayout?.columnOrder ?? null)
+  const [columnVisibility, setColumnVisibility] = useState(savedLayout?.columnVisibility ?? {})
+  const [filtersOpen, setFiltersOpen] = useState(true)
   const [dragColId, setDragColId] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
   const colMenuRef = useRef(null)
   const resizeRef = useRef(null)
   const tableRef = useRef(null)
+
+  // Persist table layout (visible columns, order, widths) to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify({ colWidths, columnOrder, columnVisibility }))
+    } catch {
+      // storage full or unavailable — layout just won't persist
+    }
+  }, [colWidths, columnOrder, columnVisibility])
+
+  const resetLayout = useCallback(() => {
+    localStorage.removeItem(LAYOUT_KEY)
+    setColWidths({})
+    setColumnOrder(null)
+    setColumnVisibility({})
+  }, [])
 
   // Close the column menu when clicking outside
   useEffect(() => {
@@ -94,13 +132,10 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
 
   const columns = [
     {
-      id: 'index',
-      header: '#',
-      cell: (info) => info.row.index + 1,
-      enableSorting: false,
-      enableColumnFilter: false,
-      enableResizing: false,
-      enableReordering: false,
+      id: 'ProductLine',
+      header: 'Product Line',
+      accessorFn: (row) => row['Product Line'],
+      size: 140,
     },
     {
       id: 'ProductName',
@@ -173,7 +208,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
       header: 'Your Price',
       accessorFn: (row) => parseFloat(row['TCG Marketplace Price']) || 0,
       cell: (info) => {
-        const rowIdx = info.row.index
+        const rowIdx = info.row.originalIndex
         const row = info.row.original
         const isEditing = editingCell?.rowIndex === rowIdx
         const currentPrice = parseFloat(row['TCG Marketplace Price']) || 0
@@ -255,9 +290,11 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
       columnFilters,
       columnSizing: colWidths,
       columnOrder,
+      columnVisibility,
     },
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
     initialState: {
       pagination: { pageSize: 100 },
     },
@@ -299,23 +336,32 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
             className="input-search"
           />
         </div>
-        <div className="filters-row">
-          {filterableColumns.map((column) => (
-            <div key={column.id} className="filter-col">
-              <label>{column.columnDef.header}</label>
-              <input
-                type="text"
-                placeholder={`Filter…`}
-                value={(column.getFilterValue() || '')}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value)
-                  table.setPageIndex(0)
-                }}
-                className="input-filter"
-              />
-            </div>
-          ))}
-        </div>
+        <button
+          className="btn btn-sm filters-toggle"
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          title={filtersOpen ? 'Hide filters' : 'Show filters'}
+        >
+          {filtersOpen ? '▾ Hide filters' : '▸ Show filters'}
+        </button>
+        {filtersOpen && (
+          <div className="filters-row">
+            {filterableColumns.map((column) => (
+              <div key={column.id} className="filter-col">
+                <label>{column.columnDef.header}</label>
+                <input
+                  type="text"
+                  placeholder={`Filter…`}
+                  value={(column.getFilterValue() || '')}
+                  onChange={(e) => {
+                    column.setFilterValue(e.target.value)
+                    table.setPageIndex(0)
+                  }}
+                  className="input-filter"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="table-actions">
@@ -336,6 +382,9 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
                   <span>{column.columnDef.header}</span>
                 </label>
               ))}
+              <button className="btn btn-sm col-menu-reset" onClick={resetLayout}>
+                ↺ Reset layout
+              </button>
             </div>
           )}
         </div>
@@ -373,6 +422,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
                             startDrag(e, column)
                           }}
                           onDragEnd={() => { setDragColId(null); setDropTarget(null) }}
+                          onClick={(e) => e.stopPropagation()}
                           title="Drag to reorder"
                         >
                           ⠿
@@ -388,6 +438,7 @@ export default function InventoryTable({ inventory, onPriceEdit, darkMode }) {
                         <span
                           className="col-resize-handle"
                           onMouseDown={(e) => startResize(e, column)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                       )}
                     </th>
