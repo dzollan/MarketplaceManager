@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState } from 'react'
 import { parseCSV } from '../utils/csvUtils'
 
-export default function CSVUpload({ onUpload, disabled }) {
+export default function CSVUpload({ onUpload, disabled, ignoreZeroQty, onIgnoreZeroQtyChange }) {
   const fileInputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
@@ -27,7 +27,9 @@ export default function CSVUpload({ onUpload, disabled }) {
     <div className="card">
       <h2>📂 Upload Inventory CSV</h2>
       <p className="card-desc">
-        Upload your TCG Player pricing export (.csv)
+        Upload your TCG Player pricing export (.csv) — the original export or the
+        enhanced version from the CardSalesData pipeline (adds <em>Avg Daily Sold</em>,
+        Release Date, Product Id &amp; URL).
       </p>
       {uploadError && <div className="error-banner">{uploadError}</div>}
       <input
@@ -45,6 +47,15 @@ export default function CSVUpload({ onUpload, disabled }) {
       >
         {uploading ? 'Uploading...' : 'Choose CSV File'}
       </button>
+      <div className="card-row checkbox-row">
+        <input
+          type="checkbox"
+          id="ignoreZeroQty"
+          checked={ignoreZeroQty}
+          onChange={(e) => onIgnoreZeroQtyChange(e.target.checked)}
+        />
+        <label htmlFor="ignoreZeroQty">Ignore 0-qty items on upload</label>
+      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import {
   CONDITION_FIELDS,
   NUMERIC_OPERATORS,
   TEXT_OPERATORS,
+  DATE_OPERATORS,
   ACTION_TYPES,
   makeRule,
   countMatches,
@@ -60,7 +61,8 @@ function RuleStep({ rule, setRule, remove, moveUp, moveDown, canMoveUp, canMoveD
   const matches = countMatches(inventory, rule)
   const field = CONDITION_FIELDS.find((f) => f.id === rule.condition.field)
   const isText = field?.kind === 'text'
-  const operators = isText ? TEXT_OPERATORS : NUMERIC_OPERATORS
+  const isDate = field?.kind === 'date'
+  const operators = isText ? TEXT_OPERATORS : isDate ? DATE_OPERATORS : NUMERIC_OPERATORS
   const action = ACTION_TYPES.find((a) => a.id === rule.action.type)
 
   const handleFieldChange = (fieldId) => {
@@ -69,7 +71,10 @@ function RuleStep({ rule, setRule, remove, moveUp, moveDown, canMoveUp, canMoveD
     if (nextField.kind === 'text') {
       condition.operator = 'isOneOf'
       condition.value = ''
-    } else if (condition.operator === 'isOneOf') {
+    } else if (nextField.kind === 'date') {
+      condition.operator = 'before'
+      condition.value = ''
+    } else if (condition.operator === 'isOneOf' || condition.operator === 'before' || condition.operator === 'after') {
       condition.operator = 'gte'
       condition.value = 3
     }
@@ -124,6 +129,15 @@ function RuleStep({ rule, setRule, remove, moveUp, moveDown, canMoveUp, canMoveD
                 value={rule.condition.value}
                 onChange={(e) => setRule({ ...rule, condition: { ...rule.condition, value: e.target.value } })}
                 className="input-small input-wide"
+              />
+            </label>
+          ) : isDate ? (
+            <label>
+              <input
+                type="date"
+                value={rule.condition.value}
+                onChange={(e) => setRule({ ...rule, condition: { ...rule.condition, value: e.target.value } })}
+                className="input-small"
               />
             </label>
           ) : (

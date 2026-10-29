@@ -545,6 +545,7 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
 .form-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 8px;
 }
@@ -554,6 +555,7 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
   align-items: center;
   gap: 6px;
   font-size: 0.85rem;
+  min-width: 0;
 }
 
 .select,
@@ -563,10 +565,12 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
   border-radius: 4px;
   font-size: 0.85rem;
   width: 75px;
+  min-width: 0;
 }
 
 .select {
   width: auto;
+  max-width: 100%;
 }
 
 .input-wide {
@@ -1074,37 +1078,112 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
   border-color: #4361ee;
 }
 
-.filters-row {
+/* Active filter chips */
+.filter-chips {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-.filter-col {
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: #eef1ff;
+  border: 1px solid #c9d2ff;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: #33418f;
+}
+
+.filter-chip button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #33418f;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.filter-chip button:hover {
+  color: #d62828;
+}
+
+.filter-chip-clear {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: #888;
+  text-decoration: underline;
+  padding: 3px 4px;
+}
+
+.filter-chip-clear:hover {
+  color: #d62828;
+}
+
+/* Column header filter indicator */
+.filter-indicator {
+  color: #4361ee;
+  font-size: 0.7rem;
+  margin-left: 2px;
+}
+
+/* Right-click column filter menu */
+.filter-menu {
+  position: absolute;
+  z-index: 100;
+  min-width: 250px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 100px;
+  gap: 10px;
 }
 
-.filter-col label {
-  font-size: 0.75rem;
+.filter-menu-title {
   font-weight: 600;
-  color: #888;
-  text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
-.input-filter {
-  padding: 4px 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  outline: none;
-  width: 100%;
+.filter-menu-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.input-filter:focus {
-  border-color: #4361ee;
+.filter-menu-row .select,
+.filter-menu-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-menu-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.app.dark .filter-chip {
+  background: #232a4d;
+  border-color: #3a4470;
+  color: #aab4ff;
+}
+
+.app.dark .filter-chip button {
+  color: #aab4ff;
+}
+
+.app.dark .filter-menu {
+  background: #1e1e2e;
+  border-color: #333;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* Sortable table headers */
@@ -1405,16 +1484,6 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
   background: #157347;
 }
 
-.success-banner {
-  background: #d1e7dd;
-  color: #0f5132;
-  border: 1px solid #badbcc;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  margin-bottom: 8px;
-}
-
 .app.dark .pipeline-step {
   background: #1e1e2a;
   border-color: #333;
@@ -1427,10 +1496,4 @@ html:has(.app.dark)::-webkit-scrollbar-thumb:hover {
 
 .app.dark .step-summary {
   color: #999;
-}
-
-.app.dark .success-banner {
-  background: #14352a;
-  color: #75b798;
-  border-color: #1e5741;
 }

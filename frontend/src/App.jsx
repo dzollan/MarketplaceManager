@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import CSVUpload from './components/CSVUpload'
 import InventoryTable from './components/InventoryTable'
 import PipelinePanel from './components/PipelinePanel'
-import SalesDataUpload from './components/SalesDataUpload'
 import { exportCSV } from './utils/csvUtils'
 import { applyPipeline, splitCondition } from './utils/pricingPipeline'
 import './App.css'
@@ -120,20 +119,11 @@ function App() {
 
       <div className="layout">
         <aside className="sidebar">
-          <CSVUpload onUpload={handleUpload} disabled={loading} />
-          <div className="card-row checkbox-row">
-            <input
-              type="checkbox"
-              id="ignoreZeroQty"
-              checked={ignoreZeroQty}
-              onChange={(e) => setIgnoreZeroQty(e.target.checked)}
-            />
-            <label htmlFor="ignoreZeroQty">Ignore 0-qty items on upload</label>
-          </div>
-          <SalesDataUpload
-            inventory={inventory}
-            onMerge={setInventory}
+          <CSVUpload
+            onUpload={handleUpload}
             disabled={loading}
+            ignoreZeroQty={ignoreZeroQty}
+            onIgnoreZeroQtyChange={setIgnoreZeroQty}
           />
           <PipelinePanel
             baseline={baseline}
@@ -174,7 +164,7 @@ function App() {
                 <strong>TCGplayer Seller Portal</strong> — Go to the Pricing tab and export your live inventory to a CSV file.
               </li>
               <li>
-                <strong>Upload & Build Pipeline</strong> — Upload the CSV here. Optionally merge a sales-data CSV (from the CardSalesData pipeline) to add Avg Daily Sold. Then build your pricing pipeline: baseline first, then as many rules as you like — reorder, add, or remove steps, and hit "Run Pipeline".
+                <strong>Upload & Build Pipeline</strong> — Upload the CSV here (the original TCGplayer export, or the enhanced version from the CardSalesData pipeline which adds Avg Daily Sold and Release Date). Then build your pricing pipeline: baseline first, then as many rules as you like — reorder, add, or remove steps, and hit "Run Pipeline".
               </li>
               <li>
                 <strong>Review & Edit</strong> — Sort your inventory and click on any price in the table to manually modify outliers.

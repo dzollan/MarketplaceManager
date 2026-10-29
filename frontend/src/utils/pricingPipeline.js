@@ -12,11 +12,14 @@
  *   - numeric (qty, avgDailySold): operators gte / lte / gt / lt / eq
  *   - text (set, rarity, condition): operator "isOneOf" — value is a
  *     comma-separated list; the rule matches if the item's value is in the list.
+ *   - date (releaseDate): operators before / after — value is an ISO date
+ *     (YYYY-MM-DD); items without a release date never match.
  */
 
 export const CONDITION_FIELDS = [
   { id: 'quantity', label: 'Quantity', column: 'Total Quantity', kind: 'numeric' },
   { id: 'avgDailySold', label: 'Avg Daily Sold', column: 'Avg Daily Sold', kind: 'numeric' },
+  { id: 'releaseDate', label: 'Release Date', column: 'Release Date', kind: 'date' },
   { id: 'set', label: 'Set', column: 'Set Name', kind: 'text' },
   { id: 'rarity', label: 'Rarity', column: 'Rarity', kind: 'text' },
   { id: 'condition', label: 'Condition', column: 'Condition', kind: 'text' },
@@ -32,6 +35,11 @@ export const NUMERIC_OPERATORS = [
 
 export const TEXT_OPERATORS = [
   { id: 'isOneOf', label: 'is one of' },
+]
+
+export const DATE_OPERATORS = [
+  { id: 'before', label: 'before' },
+  { id: 'after', label: 'after' },
 ]
 
 export const ACTION_TYPES = [
@@ -57,7 +65,16 @@ function getField(item, fieldId) {
   const raw = item[field.column]
   if (raw === undefined || raw === null) return field.kind === 'text' ? '' : 0
   if (field.kind === 'text') return String(raw).trim()
+  if (field.kind === 'date') return String(raw).trim()
   return parseFloat(raw) || 0
+}
+
+/** Parse an ISO-ish date string (YYYY-MM-DD) to a UTC timestamp, or NaN. */
+function parseDateValue(raw) {
+  const s = String(raw || '').trim()
+  if (!s) return NaN
+  const t = Date.parse(s)
+  return Number.isNaN(t) ? NaN : t
 }
 
 export function conditionMet(item, condition) {
@@ -72,6 +89,17 @@ export function conditionMet(item, condition) {
       .map((s) => s.trim())
       .filter(Boolean)
     return list.includes(v)
+  }
+
+  if (field.kind === 'date') {
+    const v = parseDateValue(getField(item, condition.field))
+    const target = parseDateValue(condition.value)
+    if (Number.isNaN(v) || Number.isNaN(target)) return false
+    switch (condition.operator) {
+      case 'before': return v < target
+      case 'after': return v > target
+      default: return false
+    }
   }
 
   const v = getField(item, condition.field)
@@ -110,6 +138,10 @@ export function describeCondition(condition) {
   if (!field) return ''
   if (field.kind === 'text') {
     return `${field.label} is one of: ${condition.value || '…'}`
+  }
+  if (field.kind === 'date') {
+    const op = DATE_OPERATORS.find((o) => o.id === condition.operator)
+    return `${field.label} ${op?.label ?? ''} ${condition.value || '…'}`
   }
   const op = NUMERIC_OPERATORS.find((o) => o.id === condition.operator)
   return `${field.label} ${op?.label ?? ''} ${condition.value}`
@@ -163,28 +195,3 @@ export function countMatches(inventory, step) {
   return inventory.filter((i) => conditionMet(i, step.condition)).length
 }
 
-/**
- * Merge sales data (from the CardSalesData pipeline) into inventory,
- * keyed by TCGplayer Id. Returns { inventory, matched }.
- */
-export function mergeSalesData(inventory, salesRows) {
-  const byId = new Map()
-  for (const row of salesRows) {
-    const id = (row['TCGplayer Id'] || '').trim()
-    if (id) byId.set(id, row)
-  }
-  let matched = 0
-  const merged = inventory.map((item) => {
-    const id = (item['TCGplayer Id'] || '').trim()
-    const sales = byId.get(id)
-    if (!sales) return item
-    matched += 1
-    return {
-      ...item,
-      'Product Id': sales['Product Id'] ?? item['Product Id'],
-      'Product URL': sales['Product URL'] ?? item['Product URL'],
-      'Avg Daily Sold': sales['Avg Daily Sold'] ?? '',
-    }
-  })
-  return { inventory: merged, matched }
-}
